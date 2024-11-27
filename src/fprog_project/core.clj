@@ -1,14 +1,16 @@
 (ns fprog-project.core
   (:require [clojure.core.match :refer [match]]
             [clojure.string :as str])
-  (:gen-class))
+  (:gen-class)
+  (:import (clojure.lang IPersistentSet)))
+
 
 (defn balance
   "Ensures the given subtree stays balanced by rearranging black nodes
   that have at least one red child and one red grandchild"
   [tree]
   (match [tree]
-         [(:or ;; Left child red with left red grandchild
+         [(:or                                              ;; Left child red with left red grandchild
             [:black [:red [:red a x b] y c] z d]
             ;; Left child red with right red grandchild
             [:black [:red a x [:red b y c]] z d]
@@ -52,19 +54,32 @@
   [filename]
   (->>
     (slurp filename)
-    (str/split-lines)
-    (remove str/blank?)
-    (apply str)
-    (str/trim)
-    (remove #(not (or (Character/isLetter %) (Character/isWhitespace %))))
-  ))
+    (#(str/replace % #"[^a-zA-Z]" " "))
+    (#(str/split % #"\s+"))
+    ))
 
+(defn word-ascii-value [word]
+  (reduce + (map int word)))
+
+
+
+;((defn word-comparer
+;   "compares two words by ascii value and if both have the same sum, it will be alphabetically sorted,
+;    returns a set of the sorted words"
+;   [firstWord, secondWord]
+;   ((let [firstAscii (word-ascii-value firstWord)
+;          secondAscii (word-ascii-value secondWord)]
+;      )
+;    )
+;  ))
 
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (->>
-    (read-words "resources/war_and_peace_short.txt")
+    ;(read-words "resources/war_and_peace_short.txt")
+    (read-words "resources/test_file_punctuation_numbers.txt")
+    (last)
     (println)
     )
   )
