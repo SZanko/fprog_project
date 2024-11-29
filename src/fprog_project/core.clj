@@ -4,6 +4,14 @@
   (:gen-class)
   (:import (clojure.lang IPersistentSet)))
 
+(def red :red)
+(def black :black)
+
+(defrecord TreeNode [color left value right])
+
+(def empty-tree nil)
+
+
 
 (defn balance
   "Ensures the given subtree stays balanced by rearranging black nodes
