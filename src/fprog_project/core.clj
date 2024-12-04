@@ -26,6 +26,19 @@
        (= black)
        (and node)))
 
+;; Define a predicate function to determine if a node has children
+(defn branch? [node]
+  (and node (or (:left node) (:right node))))
+
+;; Define a function to retrieve the children of a node
+(defn children [node]
+  (filter some? [(:left node) (:right node)]))
+
+(defn get-tree-content
+  "get the content of a tree as seq"
+  [^TreeNode tree]
+  (map :value (tree-seq branch? children tree)))
+
 
 (defn balance
   "Ensures the given subtree stays balanced by rearranging black nodes
@@ -75,11 +88,19 @@
 
 (defn read-words
   "Reads a file in a str without punctuation or numbers"
-  [filename]
+  [^String filename]
   (->>
     (slurp filename)
     (#(str/replace % #"[^a-zA-Z]" " "))
     (#(str/split % #"\s+"))))
+
+
+(defn write-tree-to-file
+  "writes the tree to a file"
+  [^TreeNode tree ^String filename]
+  (->> (get-tree-content tree)
+       (list)
+       (spit filename)))
 
 
 (def example-tree
@@ -96,8 +117,9 @@
     ;(read-words "resources/war_and_peace_short.txt")
     ;(read-words "resources/test_file_punctuation_numbers.txt")
     ;(last)
-    (find-val-node example-tree "Informatik")
+    ;(find-val-node example-tree "Informatik")
     ;(find-val-node empty-tree "Tmp")
+    (write-tree-to-file example-tree "resources/testing-execution.txt")
     (println)))
 
 

@@ -15,3 +15,5 @@ pom.xml.asc
 .idea
 .devenv/
 *.iml
+resources/testing-execution.txt
+resources/testing.txt
