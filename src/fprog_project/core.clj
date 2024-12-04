@@ -16,16 +16,16 @@
   [^TreeNode node]
   (->> (:color node)
        (= red)
-       (and node)
-       ))
+       (and node)))
+
 
 (defn is-black-node
   "Checks if the node is black"
   [^TreeNode node]
   (->> (:color node)
        (= black)
-       (and node)
-       ))
+       (and node)))
+
 
 (defn balance
   "Ensures the given subtree stays balanced by rearranging black nodes
@@ -53,23 +53,23 @@
   (let [ins (fn ins [tree]
               (match tree
                      [nil] [:red nil node nil]
-                     [color a value b] (cond
-                                         (< node value) (balance [color (ins a) value b])
-                                         (> node value) (balance [color a value (ins b)])
-                                         :else tree)))
+                     [TreeNode] (cond
+                                  (< node (:value tree)) (balance [(:color) (ins (:left tree)) (:value tree) (:right tree)])
+                                  (> node (:value tree)) (balance [(:color) (:left tree) (:value tree) (ins (:right tree))])
+                                  :else tree)))
         [_ a y b] (ins tree)]
     [:black a y b]))
 
 (defn find-val-node
   "Finds node with value x in tree"
-  [tree x]
+  [^TreeNode tree x]
   (match [tree]
-         [nil] nil ;; Match when tree is nil
+         [nil] nil                                          ;; Match when tree is nil
          [TreeNode]
          (cond
-           (< (compare x (:value tree)) 0) (recur (:left tree) x)  ;; Search left subtree
+           (< (compare x (:value tree)) 0) (recur (:left tree) x) ;; Search left subtree
            (> (compare x (:value tree)) 0) (recur (:right tree) x) ;; Search right subtree
-           :else tree)))                         ;; Found the value
+           :else tree)))                                    ;; Found the value
 
 
 
@@ -79,15 +79,15 @@
   (->>
     (slurp filename)
     (#(str/replace % #"[^a-zA-Z]" " "))
-    (#(str/split % #"\s+"))
-    ))
+    (#(str/split % #"\s+"))))
+
 
 (def example-tree
   (->TreeNode
-   :black
-        (->TreeNode :red nil "Funktionale Programmierung" nil)                              ;; Left subtree
-        "Data Science"
-        (->TreeNode :red nil "Informatik" nil)))                          ;; Right subtree
+    :black
+    (->TreeNode :red nil "Funktionale Programmierung" nil)  ;; Left subtree
+    "Data Science"
+    (->TreeNode :red nil "Informatik" nil)))                ;; Right subtree
 
 (defn -main
   "I don't do a whole lot ... yet."
@@ -98,6 +98,6 @@
     ;(last)
     (find-val-node example-tree "Informatik")
     ;(find-val-node empty-tree "Tmp")
-    (println)
-    )
-  )
+    (println)))
+
+
