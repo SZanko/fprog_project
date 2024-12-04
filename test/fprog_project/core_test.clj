@@ -8,19 +8,26 @@
   (testing "FIXME, I fail."
     (is (= 1 1))))
 
-(def example-tree-no-childs
+(def example-tree-no-children
   (->TreeNode :black nil "Value" nil))
 
 (def example-tree-no-left
   (->TreeNode :black nil "Value" (->TreeNode :red nil "Value2" nil)))
 
-
 (deftest branch-test
   (testing "branch? function"
     (is (= nil (branch? nil)))
-    (is (= nil (branch? nil)))
+    (is (= nil (branch? example-tree-no-children)))
     (is (= (:left example-tree) (branch? example-tree)))
     (is (= (:right example-tree-no-left (branch? example-tree-no-left))))))
+
+(deftest children-test
+  (testing "children function"
+    (is (= () (children nil)))
+    (is (= () (children example-tree-no-children)))
+    (is (= (list (:right example-tree-no-left)) (children example-tree-no-left)))
+    (is (= (list (:left example-tree) (:right example-tree)) (children example-tree)))))
+
 
 (deftest find-val-test
   (testing "find-val function"
