@@ -26,12 +26,12 @@
        (= black)
        (and node)))
 
-;; Define a predicate function to determine if a node has children
-(defn branch? [node]
+(defn branch? [^TreeNode node]
+  "Define a predicate function to determine if a node has children"
   (and node (or (:left node) (:right node))))
 
-;; Define a function to retrieve the children of a node
-(defn children [node]
+(defn children [^TreeNode node]
+  "Define a function to retrieve the children of a node"
   (filter some? [(:left node) (:right node)]))
 
 (defn get-tree-content
