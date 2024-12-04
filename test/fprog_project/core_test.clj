@@ -28,6 +28,13 @@
     (is (= (list (:right example-tree-no-left)) (children example-tree-no-left)))
     (is (= (list (:left example-tree) (:right example-tree)) (children example-tree)))))
 
+(deftest get-tree-content-test
+  (testing "get-tree-content-function"
+    (is (= '(nil) (get-tree-content nil)))
+    (is (= '(:value example-tree-no-children) (get-tree-content example-tree-no-children)))
+    (is (= '(:value example-tree-no-left (:value (:right example-tree-no-left))) (get-tree-content example-tree-no-left)))
+    (is (= '(:value example-tree-no-left (:value (:right example-tree)) (:value (:left example-tree))) (get-tree-content example-tree)))))
+
 
 (deftest find-val-test
   (testing "find-val function"
