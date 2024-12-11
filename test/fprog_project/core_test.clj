@@ -3,10 +3,8 @@
             [fprog-project.core :refer :all]
             [clojure.java.io :as io]))
 
-
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 1 1))))
+(def example-tree-root-only
+  (->TreeNode :black nil "Value" nil))
 
 (def example-tree-no-children
   (->TreeNode :black nil "Value" nil))
@@ -46,6 +44,12 @@
   (testing "get-tree-content function"
     (is (= '(nil) (get-tree-content empty-tree)))
     (is (= '("Data Science" "Funktionale Programmierung" "Informatik") (get-tree-content example-tree)))))
+
+(deftest balance-test
+  (testing "tries to balance a tree"
+    (is (= nil (balance empty-tree))))
+  (is (= example-tree-root-only (balance example-tree-root-only)))
+  (is (= example-tree-left-unbalanced (balance example-tree-left-unbalanced))))
 
 
 ; broken

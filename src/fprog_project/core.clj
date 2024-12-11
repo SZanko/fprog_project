@@ -11,6 +11,10 @@
 
 (def empty-tree nil)
 
+(def example-tree-left-unbalanced
+  (->TreeNode :black (->TreeNode :red (->TreeNode :red nil "Value3" nil) "Value2" nil) "Value" nil))
+
+
 (defn is-red-node
   "Checks if the node is red"
   [^TreeNode node]
@@ -39,23 +43,122 @@
   [^TreeNode tree]
   (map :value (tree-seq branch? children tree)))
 
+(defn balance-chatgpt
+  "Ensures the given subtree stays balanced by rearranging black nodes
+  that have at least one red child and one red grandchild"
+  [tree]
+  (let [tree-map (into {} tree)] ; Convert TreeNode to a map
+    (match [tree-map]
+           ;; Left child red with left red grandchild
+           [{:color :black
+             :left {:color :red
+                    :left {:color :red, :left a, :value x, :right b}
+                    :value y, :right c}
+             :value z, :right d}]
+           (do
+             (println "Match found! Balancing (left-left case):" tree)
+             (->TreeNode :red
+                         (->TreeNode :black a x b)
+                         y
+                         (->TreeNode :black c z d)))
+
+           ;; Left child red with right red grandchild
+           [{:color :black
+             :left {:color :red
+                    :left a, :value x
+                    :right {:color :red, :left b, :value y, :right c}}
+             :value z, :right d}]
+           (do
+             (println "Match found! Balancing (left-right case):" tree)
+             (->TreeNode :red
+                         (->TreeNode :black a x b)
+                         y
+                         (->TreeNode :black c z d)))
+
+           ;; Right child red with left red grandchild
+           [{:color :black
+             :left a, :value x
+             :right {:color :red
+                     :left {:color :red, :left b, :value y, :right c}
+                     :value z, :right d}}]
+           (do
+             (println "Match found! Balancing (right-left case):" tree)
+             (->TreeNode :red
+                         (->TreeNode :black a x b)
+                         y
+                         (->TreeNode :black c z d)))
+
+           ;; Right child red with right red grandchild
+           [{:color :black
+             :left a, :value x
+             :right {:color :red
+                     :left b, :value y
+                     :right {:color :red, :left c, :value z, :right d}}}]
+           (do
+             (println "Match found! Balancing (right-right case):" tree)
+             (->TreeNode :red
+                         (->TreeNode :black a x b)
+                         y
+                         (->TreeNode :black c z d)))
+
+           ;; Default case: No balancing needed
+           :else
+           (do
+             (println "No match for subtree:" tree)
+             tree))))
+
+
+(defn match-example
+  "trys to match a defrecord"
+  [tree]
+  (match [tree]
+         ;; Match a TreeNode with any values for color, left, value, and right
+         [nil] nil
+         ;[(:or {:color :red} {:color :black })]
+         [{:color :black, :left {:color :red, :left {:color :red}}}]
+         (do
+           (println "Matched: TreeNode with color black")
+           tree) ;; Return the TreeNode
+         ;[TreeNode]
+         ;(do
+         ;  (println "Match")
+         ;  tree) ;; Return the TreeNode
+
+         ;; Default case: No match
+         :else
+         (do
+           (println "Not match")
+           tree))) ;; Return the TreeNode
+
+
 
 (defn balance
   "Ensures the given subtree stays balanced by rearranging black nodes
   that have at least one red child and one red grandchild"
   [tree]
   (match [tree]
-         [(:or                                              ;; Left child red with left red grandchild
-            [:black [:red [:red a x b] y c] z d]
-            ;; Left child red with right red grandchild
-            [:black [:red a x [:red b y c]] z d]
-            ;; Right child red with left red grandchild
-            [:black a x [:red [:red b y c] z d]]
-            ;; Right child red with right red grandchild
-            [:black a x [:red b y [:red c z d]]])] [:red [:black a x b]
-                                                    y
-                                                    [:black c z d]]
-         :else tree))
+         [(:or
+            ;;; Left child red with left red grandchild
+            {:color :black, :left {:color :red, :left {:color :red}}}
+            ;;[:black [:red [:red a x b] y c] z d]
+            ;;; Left child red with right red grandchild
+            {:color :black, :left {:color :red, :right {:color :red}}}
+            ;;[:black [:red a x [:red b y c]] z d]
+            ;;; Right child red with left red grandchild
+            {:color :black, :right {:color :red, :left {:color :red}}}
+            ;;[:black a x [:red [:red b y c] z d]]
+            ;;; Right child red with right red grandchild
+            {:color :black, :right {:color :red, :right {:color :red}}}
+            ;;[:black a x [:red b y [:red c z d]]]
+            )]
+         ;; if matched what should be done
+          {:color :red, :left {:color :black}, :right {:color :black}}
+          ;[:red [:black a x b]
+          ;y
+          ;[:black c z d]]
+         :else tree)
+  )
+
 
 (defn insert-val
   "Inserts x in tree.
@@ -119,7 +222,9 @@
     ;(last)
     ;(find-val-node example-tree "Informatik")
     ;(find-val-node empty-tree "Tmp")
-    (write-tree-to-file example-tree "resources/testing-execution.txt")
+    ;(write-tree-to-file example-tree "resources/testing-execution.txt")
+    (balance example-tree-left-unbalanced)
+    ;(match-example example-tree-left-unbalanced)
     (println)))
 
 
