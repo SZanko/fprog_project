@@ -11,9 +11,18 @@
 
 (def empty-tree nil)
 
+(def example-tree-no-children
+  (->TreeNode :black nil "Value" nil))
+
 (def example-tree-left-unbalanced
   (->TreeNode :black (->TreeNode :red (->TreeNode :red nil "Value3" nil) "Value2" nil) "Value" nil))
 
+(def example-tree
+  (->TreeNode
+    :black
+    (->TreeNode :red nil "Funktionale Programmierung" nil)  ;; Left subtree
+    "Data Science"
+    (->TreeNode :red nil "Informatik" nil)))                ;; Right subtree
 
 (defn is-red-node
   "Checks if the node is red"
@@ -43,82 +52,18 @@
   [^TreeNode tree]
   (map :value (tree-seq branch? children tree)))
 
-(defn balance-chatgpt
-  "Ensures the given subtree stays balanced by rearranging black nodes
-  that have at least one red child and one red grandchild"
-  [tree]
-  (let [tree-map (into {} tree)] ; Convert TreeNode to a map
-    (match [tree-map]
-           ;; Left child red with left red grandchild
-           [{:color :black
-             :left {:color :red
-                    :left {:color :red, :left a, :value x, :right b}
-                    :value y, :right c}
-             :value z, :right d}]
-           (do
-             (println "Match found! Balancing (left-left case):" tree)
-             (->TreeNode :red
-                         (->TreeNode :black a x b)
-                         y
-                         (->TreeNode :black c z d)))
-
-           ;; Left child red with right red grandchild
-           [{:color :black
-             :left {:color :red
-                    :left a, :value x
-                    :right {:color :red, :left b, :value y, :right c}}
-             :value z, :right d}]
-           (do
-             (println "Match found! Balancing (left-right case):" tree)
-             (->TreeNode :red
-                         (->TreeNode :black a x b)
-                         y
-                         (->TreeNode :black c z d)))
-
-           ;; Right child red with left red grandchild
-           [{:color :black
-             :left a, :value x
-             :right {:color :red
-                     :left {:color :red, :left b, :value y, :right c}
-                     :value z, :right d}}]
-           (do
-             (println "Match found! Balancing (right-left case):" tree)
-             (->TreeNode :red
-                         (->TreeNode :black a x b)
-                         y
-                         (->TreeNode :black c z d)))
-
-           ;; Right child red with right red grandchild
-           [{:color :black
-             :left a, :value x
-             :right {:color :red
-                     :left b, :value y
-                     :right {:color :red, :left c, :value z, :right d}}}]
-           (do
-             (println "Match found! Balancing (right-right case):" tree)
-             (->TreeNode :red
-                         (->TreeNode :black a x b)
-                         y
-                         (->TreeNode :black c z d)))
-
-           ;; Default case: No balancing needed
-           :else
-           (do
-             (println "No match for subtree:" tree)
-             tree))))
-
-
 (defn match-example
   "trys to match a defrecord"
   [tree]
   (match [tree]
          ;; Match a TreeNode with any values for color, left, value, and right
-         [nil] nil
+         [nil] (do (println "Matched: nil") nil)
          ;[(:or {:color :red} {:color :black })]
-         [{:color :black, :left {:color :red, :left {:color :red}}}]
+         ;[{:color :black, :left {:color :red, :left {:color :red}}}]
+         [TreeNode]
          (do
            (println "Matched: TreeNode with color black")
-           tree) ;; Return the TreeNode
+           tree)                                            ;; Return the TreeNode
          ;[TreeNode]
          ;(do
          ;  (println "Match")
@@ -128,7 +73,7 @@
          :else
          (do
            (println "Not match")
-           tree))) ;; Return the TreeNode
+           tree)))                                          ;; Return the TreeNode
 
 
 
@@ -152,10 +97,10 @@
             ;;[:black a x [:red b y [:red c z d]]]
             )]
          ;; if matched what should be done
-          {:color :red, :left {:color :black}, :right {:color :black}}
-          ;[:red [:black a x b]
-          ;y
-          ;[:black c z d]]
+         {:color :red, :left {:color :black}, :right {:color :black}}
+         ;[:red [:black a x b]
+         ;y
+         ;[:black c z d]]
          :else tree)
   )
 
@@ -167,14 +112,29 @@
   Returned tree is balanced. See also `balance`"
   [^TreeNode tree ^TreeNode node]
   (let [ins (fn ins [tree]
-              (match tree
-                     [nil] [:red nil node nil]
-                     [TreeNode] (cond
-                                  (< node (:value tree)) (balance [(:color) (ins (:left tree)) (:value tree) (:right tree)])
-                                  (> node (:value tree)) (balance [(:color) (:left tree) (:value tree) (ins (:right tree))])
-                                  :else tree)))
-        [_ a y b] (ins tree)]
-    [:black a y b]))
+              (match [tree]
+                     ;[nil] [:red nil node nil]
+                     [nil]
+                     (->TreeNode :red nil (:value node) nil)
+                     [TreeNode]
+                     (let [color (:color tree)
+                           left (:left tree)
+                           value (:value tree)
+                           right (:value tree)]
+
+                       (cond
+                         (< (compare (:value node) value) 0)
+                          (balance (->TreeNode color (ins left) value right))
+                          ;(balance [(:color) (ins (:left tree)) (:value tree) (:right tree)])
+                         (> (compare (:value node) value) 0)
+                          (balance (->TreeNode color left value (ins right)))
+                          ;(balance [(:color) (:left tree) (:value tree) (ins (:right tree))])
+                         :else tree))
+                       :else (println "No match"))
+                       )
+        result (ins tree)]
+    (assoc result :color :black)))
+
 
 (defn find-val-node
   "Finds node with value x in tree"
@@ -206,15 +166,9 @@
        (spit filename)))
 
 
-(def example-tree
-  (->TreeNode
-    :black
-    (->TreeNode :red nil "Funktionale Programmierung" nil)  ;; Left subtree
-    "Data Science"
-    (->TreeNode :red nil "Informatik" nil)))                ;; Right subtree
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Reads file converts words to nodes and builds a red and black tree"
   [& args]
   (->>
     ;(read-words "resources/war_and_peace_short.txt")
@@ -223,8 +177,13 @@
     ;(find-val-node example-tree "Informatik")
     ;(find-val-node empty-tree "Tmp")
     ;(write-tree-to-file example-tree "resources/testing-execution.txt")
-    (balance example-tree-left-unbalanced)
+    ;(balance example-tree-left-unbalanced)
     ;(match-example example-tree-left-unbalanced)
+    ;(match-example empty-tree)
+    (insert-val empty-tree (->TreeNode nil nil "Value" nil))
+    (insert-val (->TreeNode nil nil "a" nil))
+    ;(insert-val example-tree-no-children (->TreeNode nil nil "Value2" nil))
+    ;(insert-val example-tree (->TreeNode nil nil "Value" nil))
     (println)))
 
 

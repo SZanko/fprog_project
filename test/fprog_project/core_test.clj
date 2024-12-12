@@ -3,11 +3,7 @@
             [fprog-project.core :refer :all]
             [clojure.java.io :as io]))
 
-(def example-tree-root-only
-  (->TreeNode :black nil "Value" nil))
 
-(def example-tree-no-children
-  (->TreeNode :black nil "Value" nil))
 
 (def example-tree-no-left
   (->TreeNode :black nil "Value" (->TreeNode :red nil "Value2" nil)))
@@ -48,8 +44,18 @@
 (deftest balance-test
   (testing "tries to balance a tree"
     (is (= nil (balance empty-tree))))
-  (is (= example-tree-root-only (balance example-tree-root-only)))
-  (is (= example-tree-left-unbalanced (balance example-tree-left-unbalanced))))
+  (is (= example-tree-no-children (balance example-tree-no-children)))
+  ;(is (= example-tree-left-unbalanced (balance example-tree-left-unbalanced)))
+  (is (= example-tree-no-left (balance example-tree-no-left)))
+  (is (= example-tree (balance example-tree)))
+  )
+
+(deftest insert-val-test
+  (testing "inserts into tree")
+  (is (= example-tree-no-children (insert-val empty-tree (->TreeNode nil nil "Value" nil))))
+  ; broken
+  (is (= example-tree-no-children (insert-val example-tree-no-children (->TreeNode nil nil "addedValue" nil))))
+  )
 
 
 ; broken
