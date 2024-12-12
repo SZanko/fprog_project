@@ -16,8 +16,13 @@
 
 (defn create-node
   "Creates a tree node with given value"
-  [value]
-  (->TreeNode :red nil value nil)
+  [colour value]
+  (->TreeNode colour nil value nil)
+  )
+
+(defn create-node-right
+  [value right]
+  (->TreeNode nil nil value right)
   )
 
 (def example-tree-left-unbalanced
@@ -26,9 +31,9 @@
 (def example-tree
   (->TreeNode
     :black
-    (create-node "Funktionale Programmierung")  ;; Left subtree
+    (create-node :red "Funktionale Programmierung")  ;; Left subtree
     "Data Science"
-    (create-node "Informatik")))                ;; Right subtree
+    (create-node :red "Informatik")))                ;; Right subtree
 
 
 
