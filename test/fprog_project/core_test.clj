@@ -54,7 +54,12 @@
   (testing "inserts into tree")
   (is (= example-tree-no-children (insert-val empty-tree (->TreeNode nil nil "Value" nil))))
   ; broken
-  (is (= example-tree-no-children (insert-val example-tree-no-children (->TreeNode nil nil "addedValue" nil))))
+  (let [tmp (->TreeNode nil nil "addedValue" nil)
+        tmp-after-insert (assoc tmp :color red)]
+    (is (= (assoc example-tree-no-children :right tmp-after-insert) (insert-val example-tree-no-children tmp)))
+  )
+  ; balance error
+  (is (= example-tree (insert-val example-tree (->TreeNode nil nil "newValue" nil))))
   )
 
 

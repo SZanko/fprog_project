@@ -120,7 +120,7 @@
                      (let [color (:color tree)
                            left (:left tree)
                            value (:value tree)
-                           right (:value tree)]
+                           right (:right tree)]
 
                        (cond
                          (< (compare (:value node) value) 0)
