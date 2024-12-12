@@ -14,15 +14,23 @@
 (def example-tree-no-children
   (->TreeNode :black nil "Value" nil))
 
+(defn create-node
+  "Creates a tree node with given value"
+  [value]
+  (->TreeNode :red nil value nil)
+  )
+
 (def example-tree-left-unbalanced
   (->TreeNode :black (->TreeNode :red (->TreeNode :red nil "Value3" nil) "Value2" nil) "Value" nil))
 
 (def example-tree
   (->TreeNode
     :black
-    (->TreeNode :red nil "Funktionale Programmierung" nil)  ;; Left subtree
+    (create-node "Funktionale Programmierung")  ;; Left subtree
     "Data Science"
-    (->TreeNode :red nil "Informatik" nil)))                ;; Right subtree
+    (create-node "Informatik")))                ;; Right subtree
+
+
 
 (defn is-red-node
   "Checks if the node is red"
