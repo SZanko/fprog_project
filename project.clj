@@ -8,4 +8,9 @@
   :main ^:skip-aot fprog-project.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
-                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
+                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"
+                                  "-Dcom.sun.management.jmxremote"
+                                  "-Dcom.sun.management.jmxremote.ssl=false"
+                                  "-Dcom.sun.management.jmxremote.authenticate=false"
+                                  "-Dcom.sun.management.jmxremote.port=43210"
+                                  ]}})
