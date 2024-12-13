@@ -25,15 +25,24 @@
   (->TreeNode nil nil value right)
   )
 
-(def example-tree-left-unbalanced
-  (->TreeNode :black (->TreeNode :red (->TreeNode :red nil "Value3" nil) "Value2" nil) "Value" nil))
+(def example-tree-left-unbalanced-left-grandchild
+  (->TreeNode :black (->TreeNode :red (->TreeNode :red nil "LL" nil) "L" nil) "N" nil))
+
+(def example-tree-left-unbalanced-right-grandchild
+  (->TreeNode :black (->TreeNode :red nil "L" (->TreeNode :red nil "LR" nil)) "N" (->TreeNode :red nil "R" nil)))
+
+(def example-tree-right-unbalanced-right-grandchild
+  (->TreeNode :black nil "N" (->TreeNode :red nil "R" (->TreeNode :red nil "RR" nil))))
+
+(def example-tree-right-unbalanced-left-grandchild
+  (->TreeNode :black (->TreeNode :red (->TreeNode :black nil "LL" nil) "L" nil) "N" (->TreeNode :red (->TreeNode :red nil "RL" nil) "R" nil)))
 
 (def example-tree
   (->TreeNode
     :black
-    (create-node :red "Funktionale Programmierung")  ;; Left subtree
+    (create-node :red "Funktionale Programmierung")         ;; Left subtree
     "Data Science"
-    (create-node :red "Informatik")))                ;; Right subtree
+    (create-node :red "Informatik")))                       ;; Right subtree
 
 
 
@@ -88,6 +97,55 @@
            (println "Not match")
            tree)))                                          ;; Return the TreeNode
 
+; todo fix recolor
+(defn rotate-right
+  "rotates the tree right"
+  [^TreeNode tree]
+  (println "rotate right")
+  (let [left-grand-child (when (:value (:left (:left tree)))
+                           (->TreeNode
+                             :red
+                             (:left  (:left (:left tree)))
+                             (:value (:left (:left tree)))
+                             (:right (:left (:left tree))))
+                           )]
+    (->TreeNode
+      (:color tree)
+      (or left-grand-child nil)
+      (:value (:left tree))
+      (->TreeNode
+        :red
+        (:right (:left tree))
+        (:value tree)
+        (:right tree))
+      )
+    )
+  )
+
+; todo fix recolor
+(defn rotate-left
+  "rotates the tree left"
+  [^TreeNode tree]
+  (println "rotate left")
+  (let [right-grand-child (when (:value (:right (:right tree)))
+                            (->TreeNode
+                              :red
+                              (:left (:right (:right tree)))
+                              (:value (:right (:right tree)))
+                              (:right (:right (:right tree))))
+                            )]
+      (->TreeNode
+        (:color tree)
+        (->TreeNode
+          :red
+          (:left tree)
+          (:value tree)
+          (:left (:right tree)))
+        (:value (:right tree))
+        (or right-grand-child nil)
+      )
+    )
+  )
 
 
 (defn balance
@@ -95,25 +153,39 @@
   that have at least one red child and one red grandchild"
   [tree]
   (match [tree]
-         [(:or
-            ;;; Left child red with left red grandchild
-            {:color :black, :left {:color :red, :left {:color :red}}}
-            ;;[:black [:red [:red a x b] y c] z d]
+         ;; Left child red with left red grandchild
+         [(:or {:color :black, :left {:color :red, :left {:color :red}}}
             ;;; Left child red with right red grandchild
-            {:color :black, :left {:color :red, :right {:color :red}}}
-            ;;[:black [:red a x [:red b y c]] z d]
-            ;;; Right child red with left red grandchild
-            {:color :black, :right {:color :red, :left {:color :red}}}
-            ;;[:black a x [:red [:red b y c] z d]]
-            ;;; Right child red with right red grandchild
-            {:color :black, :right {:color :red, :right {:color :red}}}
-            ;;[:black a x [:red b y [:red c z d]]]
-            )]
-         ;; if matched what should be done
-         {:color :red, :left {:color :black}, :right {:color :black}}
-         ;[:red [:black a x b]
-         ;y
-         ;[:black c z d]]
+            {:color :black, :left {:color :red, :right {:color :red}}})]
+         (rotate-right tree)
+
+         ;; Right child red with left red grandchild
+         [{:color :black, :right {:color :red, :left {:color :red}}}]
+         (rotate-left tree)
+
+         ;; Right child red with right red grandchild
+         [{:color :black, :right {:color :red, :right {:color :red}}}]
+         (rotate-left tree)
+
+         ;[(:or
+         ;   ;;; Left child red with left red grandchild
+         ;   {:color :black, :left {:color :red, :left {:color :red}}}
+         ;   ;;[:black [:red [:red a x b] y c] z d]
+         ;   ;;; Left child red with right red grandchild
+         ;   {:color :black, :left {:color :red, :right {:color :red}}}
+         ;   ;;[:black [:red a x [:red b y c]] z d]
+         ;   ;;; Right child red with left red grandchild
+         ;   {:color :black, :right {:color :red, :left {:color :red}}}
+         ;   ;;[:black a x [:red [:red b y c] z d]]
+         ;   ;;; Right child red with right red grandchild
+         ;   {:color :black, :right {:color :red, :right {:color :red}}}
+         ;   ;;[:black a x [:red b y [:red c z d]]]
+         ;   )]
+         ;;; if matched what should be done
+         ;{:color :red, :left {:color :black}, :right {:color :black}}
+         ;;[:red [:black a x b]
+         ;;y
+         ;;[:black c z d]]
          :else tree)
   )
 
@@ -137,14 +209,14 @@
 
                        (cond
                          (< (compare (:value node) value) 0)
-                          (balance (->TreeNode color (ins left) value right))
-                          ;(balance [(:color) (ins (:left tree)) (:value tree) (:right tree)])
+                         (balance (->TreeNode color (ins left) value right))
+                         ;(balance [(:color) (ins (:left tree)) (:value tree) (:right tree)])
                          (> (compare (:value node) value) 0)
-                          (balance (->TreeNode color left value (ins right)))
-                          ;(balance [(:color) (:left tree) (:value tree) (ins (:right tree))])
+                         (balance (->TreeNode color left value (ins right)))
+                         ;(balance [(:color) (:left tree) (:value tree) (ins (:right tree))])
                          :else tree))
-                       :else (println "No match"))
-                       )
+                     :else (println "No match"))
+              )
         result (ins tree)]
     (assoc result :color :black)))
 
