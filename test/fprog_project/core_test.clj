@@ -41,11 +41,36 @@
     (is (= '(nil) (get-tree-content empty-tree)))
     (is (= '("Data Science" "Funktionale Programmierung" "Informatik") (get-tree-content example-tree)))))
 
+(def example-tree-left-balanced-left-grandchild
+  (->TreeNode :black (->TreeNode :red nil "LL" nil) "L" (->TreeNode :red nil "N" nil)))
+
+(def example-tree-left-balanced-right-grandchild
+  (->TreeNode :black nil "L" (->TreeNode :red (->TreeNode :red nil "LR" nil) "N" (->TreeNode :red nil "R" nil))))
+
+(def example-tree-right-balanced-right-grandchild
+  (->TreeNode :black (->TreeNode :red nil "N" nil) "R" (->TreeNode :red nil "RR" nil)))
+
+(def example-tree-right-balanced-left-grandchild
+  (->TreeNode :black (->TreeNode :red (->TreeNode :red (->TreeNode :black nil "LL" nil) "L" nil) "N" (->TreeNode :red nil "RL" nil)) "R" nil))
+
+(deftest rotate-right-test
+  (testing "rotates a unbalanced tree right"
+    (is (= example-tree-left-balanced-left-grandchild (rotate-right example-tree-left-unbalanced-left-grandchild)))
+    (is (= example-tree-left-balanced-right-grandchild (rotate-right example-tree-left-unbalanced-right-grandchild)))
+    ))
+
+(deftest rotate-left-test
+  (testing "rotates a unbalanced tree right"
+    (is (= example-tree-right-balanced-right-grandchild (rotate-left example-tree-right-unbalanced-right-grandchild)))
+    (is (= example-tree-right-balanced-left-grandchild (rotate-left example-tree-right-unbalanced-left-grandchild)))
+    ))
+
 (deftest balance-test
   (testing "tries to balance a tree"
     (is (= nil (balance empty-tree))))
   (is (= example-tree-no-children (balance example-tree-no-children)))
-  ;(is (= example-tree-left-unbalanced (balance example-tree-left-unbalanced)))
+  (is (= example-tree-left-balanced-left-grandchild (balance example-tree-left-unbalanced-left-grandchild)))
+  (is (= example-tree-left-balanced-right-grandchild (balance example-tree-left-unbalanced-right-grandchild)))
   (is (= example-tree-no-left (balance example-tree-no-left)))
   (is (= example-tree (balance example-tree)))
   )
@@ -57,7 +82,7 @@
   (let [tmp (->TreeNode nil nil "addedValue" nil)
         tmp-after-insert (assoc tmp :color red)]
     (is (= (assoc example-tree-no-children :right tmp-after-insert) (insert-val example-tree-no-children tmp)))
-  )
+    )
   ; balance error
   (is (= example-tree (insert-val example-tree (->TreeNode nil nil "newValue" nil))))
   )
