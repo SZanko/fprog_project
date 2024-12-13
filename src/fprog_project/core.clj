@@ -188,11 +188,10 @@
 (defn read-words
   "Reads a file in a str without punctuation or numbers"
   [^String filename]
-  (time
   (->>
     (slurp filename)
     (#(str/replace % #"[^a-zA-Z]" " "))
-    (#(str/split % #"\s+")))))
+    (#(str/split % #"\s+"))))
 
 
 (defn write-tree-to-file
@@ -207,13 +206,30 @@
 (defn -main
   "Reads file converts words to nodes and builds a red and black tree"
   [& args]
+  ;(time
+  ;(->>
+  ;  (read-words "resources/war_and_peace.txt")
+  ;  (pmap #(->TreeNode :red nil % nil))
+  ;  (reduce (fn [tree node] (insert-val tree node)) nil) ; todo use parallelization for that
+  ;  (write-tree-to-file "resources/testing-execution.txt")
+  ;  ))
   (time
-  (->>
-    (read-words "resources/war_and_peace.txt")
-    (pmap #(->TreeNode :red nil % nil))
-    (reduce (fn [tree node] (insert-val tree node)) nil) ; todo use parallelization for that
-    (write-tree-to-file "resources/testing-execution.txt")
-    ))
+    (let [words (do
+                  (println "Reading words from file...")
+                  (time (read-words "resources/war_and_peace.txt")))
+
+          nodes (do
+                  (println "Creating tree nodes...")
+                  (time (pmap #(->TreeNode :red nil % nil) words)))
+
+          tree  (do
+                  (println "Inserting nodes into the tree...")
+                  (time (reduce (fn [tree node] (insert-val tree node)) nil nodes))) ; todo use parallelization for that
+
+          _     (do
+                  (println "Writing tree to file...")
+                  (time (write-tree-to-file "resources/testing-execution.txt" tree)))]))
+
   (println "Finished")
   (shutdown-agents) ; shuts down the thread pool
   )
