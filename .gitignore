@@ -18,3 +18,5 @@ pom.xml.asc
 resources/testing-execution.txt
 resources/testing.txt
 tmp
+output.txt
+tree.txt

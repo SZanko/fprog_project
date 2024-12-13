@@ -6,17 +6,19 @@
 (def red :red)
 (def black :black)
 
-(defrecord TreeNode [color left value right])
+(defrecord TreeNode [color left value right]
+  Object
+  (toString [this]
+    (str "TreeNode("
+         "color: " (:color this) ", "
+         "value: " (:value this) ", "
+         "left: " (:left this) ", "
+         "right: " (:right this) ")")))
 
 (def empty-tree nil)
 
 (def example-tree-no-children
   (->TreeNode :black nil "Value" nil))
-
-(defn create-node-right
-  [value right]
-  (->TreeNode nil nil value right)
-  )
 
 (def example-tree-left-unbalanced-left-grandchild
   (->TreeNode :black (->TreeNode :red (->TreeNode :red nil "LL" nil) "L" nil) "N" nil))
@@ -37,15 +39,12 @@
     "Data Science"
     (->TreeNode :red nil "Informatik" nil)))                       ;; Right subtree
 
-
-
 (defn is-red-node
   "Checks if the node is red"
   [^TreeNode node]
   (->> (:color node)
        (= red)
        (and node)))
-
 
 (defn is-black-node
   "Checks if the node is black"
@@ -71,20 +70,20 @@
 (defn rotate-right
   "rotates the tree right"
   [^TreeNode tree]
-  ;(println "rotate right")
+  (println "rotate right")
   (let [left-grand-child (when (:value (:left (:left tree)))
                            (->TreeNode
-                             :red
+                             :black
                              (:left  (:left (:left tree)))
                              (:value (:left (:left tree)))
                              (:right (:left (:left tree))))
                            )]
     (->TreeNode
-      (:color tree)
+      :red
       (or left-grand-child nil)
       (:value (:left tree))
       (->TreeNode
-        :red
+        :black
         (:right (:left tree))
         (:value tree)
         (:right tree))
@@ -96,18 +95,18 @@
 (defn rotate-left
   "rotates the tree left"
   [^TreeNode tree]
-  ;(println "rotate left")
+  (println "rotate left")
   (let [right-grand-child (when (:value (:right (:right tree)))
                             (->TreeNode
-                              :red
+                              :black
                               (:left (:right (:right tree)))
                               (:value (:right (:right tree)))
                               (:right (:right (:right tree))))
                             )]
       (->TreeNode
-        (:color tree)
+        :red
         (->TreeNode
-          :red
+          :black
           (:left tree)
           (:value tree)
           (:left (:right tree)))
@@ -117,11 +116,11 @@
     )
   )
 
-
 (defn balance
   "Ensures the given subtree stays balanced by rearranging black nodes
   that have at least one red child and one red grandchild"
   [^TreeNode tree]
+  (println "balance " (:value tree))
   (match [tree]
          ;; Left child red with left red grandchild
          [(:or {:color :black, :left {:color :red, :left {:color :red}}}
@@ -137,9 +136,7 @@
          [{:color :black, :right {:color :red, :right {:color :red}}}]
          (rotate-left tree)
 
-         :else tree)
-  )
-
+         :else tree))
 
 (defn insert-val
   "Inserts x in tree.
@@ -147,9 +144,8 @@
 
   Returned tree is balanced. See also `balance`"
   [^TreeNode tree ^TreeNode node]
-  (let [ins (fn ins [tree]
+  (let [ins (fn ins [^TreeNode tree]
               (match [tree]
-                     ;[nil] [:red nil node nil]
                      [nil]
                      (->TreeNode :red nil (:value node) nil)
                      [TreeNode]
@@ -160,17 +156,15 @@
 
                        (cond
                          (< (compare (:value node) value) 0)
-                         (balance (->TreeNode color (ins left) value right))
-                         ;(balance [(:color) (ins (:left tree)) (:value tree) (:right tree)])
+                         (do
+                           (println "Insert right" (:value node))
+                           (balance (->TreeNode color (ins left) value right)))
                          (> (compare (:value node) value) 0)
-                         (balance (->TreeNode color left value (ins right)))
-                         ;(balance [(:color) (:left tree) (:value tree) (ins (:right tree))])
-                         :else tree))
-                     :else (println "No match"))
-              )
-        result (ins tree)]
-    (assoc result :color :black)))
-
+                         (do
+                           (println "Insert left" (:value node))
+                           (balance (->TreeNode color left value (ins right))))
+                         :else tree))))]
+    (assoc (ins tree) :color :black)))
 
 (defn find-val-node
   "Finds node with value x in tree"
@@ -183,8 +177,6 @@
            (> (compare x (:value tree)) 0) (recur (:right tree) x) ;; Search right subtree
            :else tree)))                                    ;; Found the value
 
-
-
 (defn read-words
   "Reads a file in a str without punctuation or numbers"
   [^String filename]
@@ -193,31 +185,18 @@
     (#(str/replace % #"[^a-zA-Z]" " "))
     (#(str/split % #"\s+"))))
 
-
-(defn write-tree-to-file
+(defn write-tree-values-to-file
   "writes the tree to a file"
   [^String filename ^TreeNode tree]
   (->> (get-tree-content tree)
        (list)
        (spit filename)))
 
-(defn parallel-insert
-  "Inserts nodes into a red-black tree in parallel."
-  [nodes]
-  (let [chunk-size 500  ;; Adjust based on your system's capacity
-        chunks (partition-all chunk-size nodes)]  ;; Step 1: Split nodes into chunks
-    ;; Step 2: Create subtrees in parallel
-    (let [subtrees (pmap
-                     (fn [chunk]
-                       (reduce (fn [tree node] (insert-val tree node)) nil chunk))
-                     chunks)]
-      ;; Step 3: Merge subtrees sequentially
-      (reduce (fn [tree subtree]
-                (reduce (fn [tree node] (insert-val tree node))
-                        tree
-                        (get-tree-content subtree)))
-              nil
-              subtrees))))
+(defn write-tree-as-tree-to-file
+  "Write the tree to a file"
+  [^String filename ^TreeNode tree]
+  (spit filename (pr-str tree))
+  )
 
 (defn -main
   "Reads file converts words to nodes and builds a red and black tree"
@@ -229,22 +208,31 @@
   ;  (reduce (fn [tree node] (insert-val tree node)) nil) ; todo use parallelization for that
   ;  (write-tree-to-file "resources/testing-execution.txt")
   ;  ))
+  ;(Thread/sleep 10000)
   (time
     (let [words (do
                   (println "Reading words from file...")
-                  (time (read-words "resources/war_and_peace.txt")))
+                  (time (read-words "resources/war_and_peace_one_sentence.txt")))
 
           nodes (do
                   (println "Creating tree nodes...")
                   (time (map #(->TreeNode :red nil % nil) words)))
 
+          ;node-chunks (partition-all 100 nodes)
+          ;partial-trees (doall (pmap #(reduce insert-val nil %) node-chunks))
+
           tree  (do
+                  ;(println "Count nodes" (count nodes))
                   (println "Inserting nodes into the tree...")
-                  (time (parallel-insert nodes)))  ; todo use parallelization for that
+                  (time (reduce (fn [tree node] (insert-val tree node)) nil nodes))
+                  ;(time (reduce insert-val partial-trees))
+                  ) ; todo use parallelization for that
 
           _     (do
                   (println "Writing tree to file...")
-                  (time (write-tree-to-file "resources/testing-execution.txt" tree)))]))
+                  (time (write-tree-values-to-file "output.txt" tree)))]
+
+      (write-tree-as-tree-to-file "tree.txt" tree)))
 
   (println "Finished")
   (shutdown-agents) ; shuts down the thread pool

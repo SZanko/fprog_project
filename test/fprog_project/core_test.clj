@@ -92,7 +92,7 @@
 (deftest write-tree-to-file-test
   (testing "write-tree-to-file function"
     (is (= (.exists (io/file "resources/testing.txt")) false))
-    (is (= (write-tree-to-file example-tree "resources/testing.txt") nil))
+    (is (= (write-tree-values-to-file example-tree "resources/testing.txt") nil))
     (is (= (slurp "resources/testing.txt") (get-tree-content example-tree)))
     (is (= (.exists (io/file "resources/testing.txt")) true)))
 
