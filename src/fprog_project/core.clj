@@ -201,7 +201,23 @@
        (list)
        (spit filename)))
 
-
+(defn parallel-insert
+  "Inserts nodes into a red-black tree in parallel."
+  [nodes]
+  (let [chunk-size 500  ;; Adjust based on your system's capacity
+        chunks (partition-all chunk-size nodes)]  ;; Step 1: Split nodes into chunks
+    ;; Step 2: Create subtrees in parallel
+    (let [subtrees (pmap
+                     (fn [chunk]
+                       (reduce (fn [tree node] (insert-val tree node)) nil chunk))
+                     chunks)]
+      ;; Step 3: Merge subtrees sequentially
+      (reduce (fn [tree subtree]
+                (reduce (fn [tree node] (insert-val tree node))
+                        tree
+                        (get-tree-content subtree)))
+              nil
+              subtrees))))
 
 (defn -main
   "Reads file converts words to nodes and builds a red and black tree"
@@ -224,7 +240,7 @@
 
           tree  (do
                   (println "Inserting nodes into the tree...")
-                  (time (reduce (fn [tree node] (insert-val tree node)) nil nodes))) ; todo use parallelization for that
+                  (time (parallel-insert nodes)))  ; todo use parallelization for that
 
           _     (do
                   (println "Writing tree to file...")
