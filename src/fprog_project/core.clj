@@ -63,7 +63,7 @@
 (defn rotate-right
   "rotates the tree right"
   [^TreeNode tree]
-  ;(println "rotate right")
+  (println "rotate right")
   (let [left-grand-child (when (:value (:left (:left tree)))
                            (->TreeNode
                              :black
@@ -72,7 +72,7 @@
                              (:right (:left (:left tree))))
                            )]
     (->TreeNode
-      (:color :red)
+      :red
       (or left-grand-child nil)
       (:value (:left tree))
       (->TreeNode
@@ -88,7 +88,7 @@
 (defn rotate-left
   "rotates the tree left"
   [^TreeNode tree]
-  ;(println "rotate left")
+  (println "rotate left")
   (let [right-grand-child (when (:value (:right (:right tree)))
                             (->TreeNode
                               :black
@@ -97,7 +97,7 @@
                               (:right (:right (:right tree))))
                             )]
       (->TreeNode
-        (:color red)
+        :red
         (->TreeNode
           :black
           (:left tree)
@@ -113,6 +113,7 @@
   "Ensures the given subtree stays balanced by rearranging black nodes
   that have at least one red child and one red grandchild"
   [^TreeNode tree]
+  (println "balance " (:value tree))
   (match [tree]
          ;; Left child red with left red grandchild
          [(:or {:color :black, :left {:color :red, :left {:color :red}}}
@@ -148,12 +149,15 @@
 
                        (cond
                          (< (compare (:value node) value) 0)
-                         (balance (->TreeNode color (ins left) value right))
+                         (do
+                           (println "Insert right" (:value node))
+                           (balance (->TreeNode color (ins left) value right)))
                          (> (compare (:value node) value) 0)
-                         (balance (->TreeNode color left value (ins right)))
-                         :else tree))))
-        result (ins tree)]
-    (assoc result :color :black)))
+                         (do
+                           (println "Insert left" (:value node))
+                           (balance (->TreeNode color left value (ins right))))
+                         :else tree))))]
+    (assoc (ins tree) :color :black)))
 
 (defn find-val-node
   "Finds node with value x in tree"
@@ -201,7 +205,7 @@
   (time
     (let [words (do
                   (println "Reading words from file...")
-                  (time (read-words "resources/war_and_peace_very_short.txt")))
+                  (time (read-words "resources/war_and_peace_one_sentence.txt")))
 
           nodes (do
                   (println "Creating tree nodes...")
