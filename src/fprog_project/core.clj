@@ -220,7 +220,7 @@
 
           nodes (do
                   (println "Creating tree nodes...")
-                  (time (pmap #(->TreeNode :red nil % nil) words)))
+                  (time (map #(->TreeNode :red nil % nil) words)))
 
           tree  (do
                   (println "Inserting nodes into the tree...")
