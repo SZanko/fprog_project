@@ -6,7 +6,14 @@
 (def red :red)
 (def black :black)
 
-(defrecord TreeNode [color left value right])
+(defrecord TreeNode [color left value right]
+  Object
+  (toString [this]
+    (str "TreeNode("
+         "color: " (:color this) ", "
+         "value: " (:value this) ", "
+         "left: " (:left this) ", "
+         "right: " (:right this) ")")))
 
 (def empty-tree nil)
 
