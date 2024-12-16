@@ -66,14 +66,22 @@
   [^TreeNode tree]
   (pmap :value (tree-seq branch? children tree)))
 
+(defn invert-colors
+  "When red return black and vice versa"
+  [^TreeNode tree]
+  (if (is-black-node tree)
+    (assoc tree :color :red)
+    (assoc tree :color black))
+  )
+
 ; todo fix recolor
 (defn rotate-right
   "rotates the tree right"
   [^TreeNode tree]
-  (println "rotate right")
+  ;(println "rotate right")
   (let [left-grand-child (when (:value (:left (:left tree)))
                            (->TreeNode
-                             :black
+                             (:color (:left (:left tree)))
                              (:left  (:left (:left tree)))
                              (:value (:left (:left tree)))
                              (:right (:left (:left tree))))
@@ -95,10 +103,10 @@
 (defn rotate-left
   "rotates the tree left"
   [^TreeNode tree]
-  (println "rotate left")
+  ;(println "rotate left")
   (let [right-grand-child (when (:value (:right (:right tree)))
                             (->TreeNode
-                              :black
+                              (:color (:right (:right tree)))
                               (:left (:right (:right tree)))
                               (:value (:right (:right tree)))
                               (:right (:right (:right tree))))
@@ -116,11 +124,14 @@
     )
   )
 
+(def balance-called (atom 0))
+
 (defn balance
   "Ensures the given subtree stays balanced by rearranging black nodes
   that have at least one red child and one red grandchild"
   [^TreeNode tree]
-  (println "balance " (:value tree))
+  ;(swap! balance-called inc)
+  ;(println "balance called " @balance-called)
   (match [tree]
          ;; Left child red with left red grandchild
          [(:or {:color :black, :left {:color :red, :left {:color :red}}}
@@ -157,11 +168,11 @@
                        (cond
                          (< (compare (:value node) value) 0)
                          (do
-                           (println "Insert right" (:value node))
+                           ;(println "Insert right" (:value node))
                            (balance (->TreeNode color (ins left) value right)))
                          (> (compare (:value node) value) 0)
                          (do
-                           (println "Insert left" (:value node))
+                           ;(println "Insert left" (:value node))
                            (balance (->TreeNode color left value (ins right))))
                          :else tree))))]
     (assoc (ins tree) :color :black)))
@@ -182,7 +193,7 @@
   [^String filename]
   (->>
     (slurp filename)
-    (#(str/replace % #"[^a-zA-Z]" " "))
+    (#(str/replace % #"[^a-zA-Z']+" " "))
     (#(str/split % #"\s+"))))
 
 (defn write-tree-values-to-file
@@ -212,7 +223,7 @@
   (time
     (let [words (do
                   (println "Reading words from file...")
-                  (time (read-words "resources/war_and_peace_one_sentence.txt")))
+                  (time (read-words "resources/war_and_peace.txt")))
 
           nodes (do
                   (println "Creating tree nodes...")
