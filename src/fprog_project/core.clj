@@ -193,7 +193,9 @@
   [^String filename]
   (->>
     (slurp filename)
-    (#(str/replace % #"[^a-zA-Z']+" " "))
+    (#(str/replace % #"([a-zA-Z])'([a-zA-Z])" "$1$2"))
+    (#(str/replace % #"[^a-zA-Z]" " "))
+    (str/lower-case)
     (#(str/split % #"\s+"))))
 
 (defn write-tree-values-to-file
