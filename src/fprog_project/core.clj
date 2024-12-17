@@ -83,11 +83,9 @@
     (assoc tree :color black))
   )
 
-; todo fix recolor
 (defn rotate-right
   "rotates the tree right"
   [^TreeNode tree]
-  ;(println "rotate right")
   (let [left-grand-child (when (:value (:left (:left tree)))
                            (->TreeNode
                              (:color (:left (:left tree)))
@@ -108,11 +106,9 @@
     )
   )
 
-; todo fix recolor
 (defn rotate-left
   "rotates the tree left"
   [^TreeNode tree]
-  ;(println "rotate left")
   (let [right-grand-child (when (:value (:right (:right tree)))
                             (->TreeNode
                               (:color (:right (:right tree)))
@@ -176,13 +172,9 @@
 
                        (cond
                          (< (compare (:value node) value) 0)
-                         (do
-                           ;(println "Insert right" (:value node))
-                           (balance (->TreeNode color (ins left) value right)))
+                           (balance (->TreeNode color (ins left) value right))
                          (> (compare (:value node) value) 0)
-                         (do
-                           ;(println "Insert left" (:value node))
-                           (balance (->TreeNode color left value (ins right))))
+                           (balance (->TreeNode color left value (ins right)))
                          :else tree))))]
     (assoc (ins tree) :color :black)))
 
@@ -240,8 +232,8 @@
                   (println "Creating tree nodes...")
                   (time (map #(->TreeNode :red nil % nil) words)))
 
-          ;node-chunks (partition-all 100 nodes)
-          ;partial-trees (doall (pmap #(reduce insert-val nil %) node-chunks))
+          node-chunks (partition-all 100 nodes)
+          partial-trees (doall (pmap #(reduce insert-val nil %) node-chunks))
 
           tree  (do
                   ;(println "Count nodes" (count nodes))
