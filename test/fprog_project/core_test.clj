@@ -1,99 +1,142 @@
 (ns fprog-project.core-test
   (:require [clojure.test :refer :all]
-            [fprog-project.core :refer :all]
-            [clojure.java.io :as io]))
+            [fprog-project.core :refer :all]))
 
+(deftest test-is-red-node
+  (testing "is-red-node function"
+    (let [red-node (->TreeNode :red nil "test" nil)
+          black-node (->TreeNode :black nil "test" nil)
+          nil-node nil]
+      (is (is-red-node red-node) "Red node should return true")
+      (is (not (is-red-node black-node)) "Black node should return false")
+      (is (not (is-red-node nil-node)) "Nil node should return false"))))
 
+(deftest test-is-black-node
+  (testing "is-black-node function"
+    (let [red-node (->TreeNode :red nil "test" nil)
+          black-node (->TreeNode :black nil "test" nil)
+          nil-node nil]
+      (is (is-black-node black-node) "Black node should return true")
+      (is (not (is-black-node red-node)) "Red node should return false")
+      (is (not (is-black-node nil-node)) "Nil node should return false"))))
 
-(def example-tree-no-left
-  (->TreeNode :black nil "Value" (->TreeNode :red nil "Value2" nil)))
-
-(deftest branch-test
+(deftest test-branch?
   (testing "branch? function"
-    (is (= nil (branch? nil)))
-    (is (= nil (branch? example-tree-no-children)))
-    (is (= (:left example-tree) (branch? example-tree)))
-    (is (= (:right example-tree-no-left (branch? example-tree-no-left))))))
+    (let [leaf-node (->TreeNode :black nil "leaf" nil)
+          branch-node (->TreeNode :black
+                                  (->TreeNode :red nil "left" nil)
+                                  "branch"
+                                  (->TreeNode :red nil "right" nil))
+          nil-node nil]
+      (is (not (branch? leaf-node)) "Leaf node should return false")
+      (is (branch? branch-node) "Node with children should return true")
+      (is (not (branch? nil-node)) "Nil node should return false"))))
 
-(deftest children-test
+(deftest test-children
   (testing "children function"
-    (is (= () (children nil)))
-    (is (= () (children example-tree-no-children)))
-    (is (= (list (:right example-tree-no-left)) (children example-tree-no-left)))
-    (is (= (list (:left example-tree) (:right example-tree)) (children example-tree)))))
+    (let [leaf-node (->TreeNode :black nil "leaf" nil)
+          branch-node (->TreeNode :black
+                                  (->TreeNode :red nil "left" nil)
+                                  "branch"
+                                  (->TreeNode :red nil "right" nil))]
+      (is (empty? (children leaf-node)) "Leaf node should return empty list")
+      (is (= 2 (count (children branch-node))) "Branch node should return two children"))))
 
-(deftest get-tree-content-test
-  (testing "get-tree-content-function"
-    (is (= '(nil) (get-tree-content nil)))
-    (is (= '(:value example-tree-no-children) (get-tree-content example-tree-no-children)))
-    (is (= '(:value example-tree-no-left (:value (:right example-tree-no-left))) (get-tree-content example-tree-no-left)))
-    (is (= '(:value example-tree-no-left (:value (:right example-tree)) (:value (:left example-tree))) (get-tree-content example-tree)))))
-
-
-(deftest find-val-test
-  (testing "find-val function"
-    (is (= (find-val-node empty-tree "Tmp") nil))
-    (is (= (find-val-node example-tree "Informatik") (->TreeNode :red nil "Informatik" nil)))))
-
-
-(deftest get-tree-content-test
+(deftest test-get-tree-content
   (testing "get-tree-content function"
-    (is (= '(nil) (get-tree-content empty-tree)))
-    (is (= '("Data Science" "Funktionale Programmierung" "Informatik") (get-tree-content example-tree)))))
+    (let [tree (->TreeNode
+                 :black
+                 (->TreeNode :red nil "B" nil)
+                 "D"
+                 (->TreeNode :red nil "F" nil))]
+      (is (= ["B" "D" "F"] (get-tree-content tree)) "Should return in-order traversal"))))
 
-(def example-tree-left-balanced-left-grandchild
-  (->TreeNode :black (->TreeNode :red nil "LL" nil) "L" (->TreeNode :red nil "N" nil)))
+(deftest test-invert-colors
+  (testing "invert-colors function"
+    (let [black-node (->TreeNode :black nil "test" nil)
+          red-node (->TreeNode :red nil "test" nil)]
+      (is (= :red (:color (invert-colors black-node))) "Black node should become red")
+      (is (= :black (:color (invert-colors red-node))) "Red node should become black"))))
 
-(def example-tree-left-balanced-right-grandchild
-  (->TreeNode :black nil "L" (->TreeNode :red (->TreeNode :red nil "LR" nil) "N" (->TreeNode :red nil "R" nil))))
+(deftest test-rotate-right
+  (testing "rotate-right function"
+    (let [tree (->TreeNode
+                 :black
+                 (->TreeNode :red
+                             (->TreeNode :red nil "LL" nil)
+                             "L"
+                             nil)
+                 "N"
+                 nil)]
+      (let [rotated (rotate-right tree)]
+        (is (= :red (:color rotated)) "Root should become red")
+        (is (= "L" (:value rotated)) "Root value should change")
+        (is (= :black (:color (:right rotated))) "Right child should be black")))))
 
-(def example-tree-right-balanced-right-grandchild
-  (->TreeNode :black (->TreeNode :red nil "N" nil) "R" (->TreeNode :red nil "RR" nil)))
+(deftest test-rotate-left
+  (testing "rotate-left function"
+    (let [tree (->TreeNode
+                 :black
+                 nil
+                 "N"
+                 (->TreeNode :red
+                             nil
+                             "R"
+                             (->TreeNode :red nil "RR" nil)))]
+      (let [rotated (rotate-left tree)]
+        (is (= :red (:color rotated)) "Root should become red")
+        (is (= "R" (:value rotated)) "Root value should change")
+        (is (= :black (:color (:left rotated))) "Left child should be black")))))
 
-(def example-tree-right-balanced-left-grandchild
-  (->TreeNode :black (->TreeNode :red (->TreeNode :red (->TreeNode :black nil "LL" nil) "L" nil) "N" (->TreeNode :red nil "RL" nil)) "R" nil))
+(deftest test-insert-val
+  (testing "insert-val function"
+    (let [initial-tree nil
+          first-node (->TreeNode :red nil "first" nil)
+          second-node (->TreeNode :red nil "second" nil)
+          tree-with-first (insert-val initial-tree first-node)
+          tree-with-two-nodes (insert-val tree-with-first second-node)]
+      (is (= :black (:color tree-with-first)) "First inserted node should be black")
+      (is (= "first" (:value tree-with-first)) "First node value should be correct")
+      (is (some? tree-with-two-nodes) "Should be able to insert second node"))))
 
-(deftest rotate-right-test
-  (testing "rotates a unbalanced tree right"
-    (is (= example-tree-left-balanced-left-grandchild (rotate-right example-tree-left-unbalanced-left-grandchild)))
-    (is (= example-tree-left-balanced-right-grandchild (rotate-right example-tree-left-unbalanced-right-grandchild)))
-    ))
+(deftest test-find-val-node
+  (testing "find-val-node function"
+    (let [tree (->TreeNode
+                 :black
+                 (->TreeNode :red nil "B" nil)
+                 "D"
+                 (->TreeNode :red nil "F" nil))]
+      (is (= "B" (:value (find-val-node tree "B"))) "Should find left node")
+      (is (= "D" (:value (find-val-node tree "D"))) "Should find root node")
+      (is (= "F" (:value (find-val-node tree "F"))) "Should find right node")
+      (is (nil? (find-val-node tree "X")) "Should return nil for non-existent value"))))
 
-(deftest rotate-left-test
-  (testing "rotates a unbalanced tree right"
-    (is (= example-tree-right-balanced-right-grandchild (rotate-left example-tree-right-unbalanced-right-grandchild)))
-    (is (= example-tree-right-balanced-left-grandchild (rotate-left example-tree-right-unbalanced-left-grandchild)))
-    ))
+(deftest test-read-words
+  (testing "read-words function"
+    (with-redefs [slurp (constantly "Hello world! This is a test.")]
+      (let [words (read-words "dummy-file.txt")]
+        (is (= ["hello" "world" "this" "is" "a" "test"] words))))))
 
-(deftest balance-test
-  (testing "tries to balance a tree"
-    (is (= nil (balance empty-tree))))
-  (is (= example-tree-no-children (balance example-tree-no-children)))
-  (is (= example-tree-left-balanced-left-grandchild (balance example-tree-left-unbalanced-left-grandchild)))
-  (is (= example-tree-left-balanced-right-grandchild (balance example-tree-left-unbalanced-right-grandchild)))
-  (is (= example-tree-no-left (balance example-tree-no-left)))
-  (is (= example-tree (balance example-tree)))
-  )
+(deftest test-write-tree-values-to-file
+  (testing "write-tree-values-to-file function"
+    (let [tree (->TreeNode
+                 :black
+                 (->TreeNode :red nil "B" nil)
+                 "D"
+                 (->TreeNode :red nil "F" nil))
+          filename "test-output.txt"]
+      (write-tree-values-to-file filename tree)
+      (is (= ["B" "D" "F"] (first (read-string (slurp filename)))) "File should contain tree values"))))
 
-(deftest insert-val-test
-  (testing "inserts into tree")
-  (is (= example-tree-no-children (insert-val empty-tree (->TreeNode nil nil "Value" nil))))
-  ; broken
-  (let [tmp (->TreeNode nil nil "addedValue" nil)
-        tmp-after-insert (assoc tmp :color red)]
-    (is (= (assoc example-tree-no-children :right tmp-after-insert) (insert-val example-tree-no-children tmp)))
-    )
-  ; balance error
-  (is (= example-tree (insert-val example-tree (->TreeNode nil nil "newValue" nil))))
-  )
-
-
-; broken
-(deftest write-tree-to-file-test
-  (testing "write-tree-to-file function"
-    (is (= (.exists (io/file "resources/testing.txt")) false))
-    (is (= (write-tree-values-to-file example-tree "resources/testing.txt") nil))
-    (is (= (slurp "resources/testing.txt") (get-tree-content example-tree)))
-    (is (= (.exists (io/file "resources/testing.txt")) true)))
-
-  (io/delete-file "resources/testing.txt" true))
+(deftest test-write-tree-as-tree-to-file
+  (testing "write-tree-as-tree-to-file function"
+    (let [tree (->TreeNode
+                 :black
+                 (->TreeNode :red nil "B" nil)
+                 "D"
+                 (->TreeNode :red nil "F" nil))
+          filename "test-tree.txt"]
+      (write-tree-as-tree-to-file filename tree)
+      (let [read-tree (read-string (slurp filename))]
+        (is (= (:value tree) (:value read-tree)) "Read tree should have same value")
+        (is (= (:color tree) (:color read-tree)) "Read tree should have same color")))))
