@@ -39,28 +39,28 @@
     "Data Science"
     (->TreeNode :red nil "Informatik" nil)))                       ;; Right subtree
 
-(defn is-red-node
-  "Checks if the node is red"
-  [^TreeNode node]
-  (->> (:color node)
-       (= red)
-       (and node)))
+;(defn is-red-node
+;  "Checks if the node is red"
+;  [^TreeNode node]
+;  (->> (:color node)
+;       (= red)
+;       (and node)))
 
-(defn is-black-node
-  "Checks if the node is black"
-  [^TreeNode node]
-  (->> (:color node)
-       (= black)
-       (and node)))
+;(defn is-black-node
+;  "Checks if the node is black"
+;  [^TreeNode node]
+;  (->> (:color node)
+;       (= black)
+;       (and node)))
 
 
-(defn branch? [^TreeNode node]
-  "Define a predicate function to determine if a node has children"
-  (and node (or (:left node) (:right node))))
+;(defn branch? [^TreeNode node]
+;  "Define a predicate function to determine if a node has children"
+;  (and node (or (:left node) (:right node))))
 
-(defn children [^TreeNode node]
-  "Define a function to retrieve the children of a node"
-  (filter some? [(:left node) (:right node)]))
+;(defn children [^TreeNode node]
+;  "Define a function to retrieve the children of a node"
+;  (filter some? [(:left node) (:right node)]))
 
 
 
@@ -75,13 +75,13 @@
                        (traverse (:right node)))))]
     (traverse tree)))
 
-(defn invert-colors
-  "When red return black and vice versa"
-  [^TreeNode tree]
-  (if (is-black-node tree)
-    (assoc tree :color :red)
-    (assoc tree :color black))
-  )
+;(defn invert-colors
+;  "When red return black and vice versa"
+;  [^TreeNode tree]
+;  (if (is-black-node tree)
+;    (assoc tree :color :red)
+;   (assoc tree :color black))
+; )
 
 (defn rotate-right
   "rotates the tree right"
@@ -129,7 +129,7 @@
     )
   )
 
-(def balance-called (atom 0))
+;(def balance-called (atom 0))
 
 (defn balance
   "Ensures the given subtree stays balanced by rearranging black nodes
@@ -178,16 +178,16 @@
                          :else tree))))]
     (assoc (ins tree) :color :black)))
 
-(defn find-val-node
-  "Finds node with value x in tree"
-  [^TreeNode tree x]
-  (match [tree]
-         [nil] nil                                          ;; Match when tree is nil
-         [TreeNode]
-         (cond
-           (< (compare x (:value tree)) 0) (recur (:left tree) x) ;; Search left subtree
-           (> (compare x (:value tree)) 0) (recur (:right tree) x) ;; Search right subtree
-           :else tree)))                                    ;; Found the value
+;(defn find-val-node
+;  "Finds node with value x in tree"
+;  [^TreeNode tree x]
+;  (match [tree]
+;         [nil] nil                                          ;; Match when tree is nil
+;         [TreeNode]
+;         (cond
+;           (< (compare x (:value tree)) 0) (recur (:left tree) x) ;; Search left subtree
+;           (> (compare x (:value tree)) 0) (recur (:right tree) x) ;; Search right subtree
+;           :else tree)))                                    ;; Found the value
 
 (defn read-words
   "Reads a file in a str without punctuation or numbers"
@@ -232,8 +232,8 @@
                   (println "Creating tree nodes...")
                   (time (map #(->TreeNode :red nil % nil) words)))
 
-          node-chunks (partition-all 100 nodes)
-          partial-trees (doall (pmap #(reduce insert-val nil %) node-chunks))
+          ;node-chunks (partition-all 100 nodes)
+          ;partial-trees (doall (pmap #(reduce insert-val nil %) node-chunks))
 
           tree  (do
                   ;(println "Count nodes" (count nodes))
@@ -246,7 +246,8 @@
                   (println "Writing tree to file...")
                   (time (write-tree-values-to-file "output.txt" tree)))]
 
-      (write-tree-as-tree-to-file "tree.txt" tree)))
+      ;(write-tree-as-tree-to-file "tree.txt" tree)
+      ))
 
   (println "Finished")
   (shutdown-agents) ; shuts down the thread pool
