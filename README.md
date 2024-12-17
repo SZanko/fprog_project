@@ -11,6 +11,8 @@ Create your solution in C++, Haskell, F#, Java, Python, Groovy, Scala, or Lisp u
 # How to run 
 
 1. Install Java>=21 and Maven>=3
+2. run ```mvn install```
+3. execute ```java -jar target/fprog-project-1.0-SNAPSHOT-jar-with-dependencies.jar```
 
 # Steps:
 
