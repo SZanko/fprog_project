@@ -53,6 +53,7 @@
        (= black)
        (and node)))
 
+
 (defn branch? [^TreeNode node]
   "Define a predicate function to determine if a node has children"
   (and node (or (:left node) (:right node))))
@@ -61,10 +62,18 @@
   "Define a function to retrieve the children of a node"
   (filter some? [(:left node) (:right node)]))
 
+
+
 (defn get-tree-content
-  "get the content of a tree as seq"
+  "Get the content of a tree as a sorted seq using immutable in-order traversal"
   [^TreeNode tree]
-  (pmap :value (tree-seq branch? children tree)))
+  (let [traverse (fn traverse [node]
+                   (when node
+                     (concat
+                       (traverse (:left node))
+                       [(:value node)]
+                       (traverse (:right node)))))]
+    (traverse tree)))
 
 (defn invert-colors
   "When red return black and vice versa"
